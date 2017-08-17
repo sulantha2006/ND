@@ -5,7 +5,7 @@
 # pull request on our GitHub repository:
 #     https://github.com/kaczmarj/neurodocker
 #
-# Timestamp: 2017-08-17 01:35:47
+# Timestamp: 2017-08-17 13:30:21
 
 FROM ubuntu:xenial
 
@@ -157,14 +157,14 @@ ENV PATH=/opt/mrtrix3/bin:$PATH
 RUN apt-get update -qq && apt-get install -yq --no-install-recommends dirmngr gnupg \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-    && curl -sSL http://neuro.debian.net/lists/zesty.us-nh.full \
+    && curl -sSL http://neuro.debian.net/lists/jessie.us-nh.full \
     > /etc/apt/sources.list.d/neurodebian.sources.list \
     && apt-key adv --fetch-keys https://dl.dropbox.com/s/zxs209o955q6vkg/neurodebian.gpg \
     && (apt-key adv --refresh-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D32F012649A5A9 || true) \
     && apt-get update
 
 # Install NeuroDebian packages
-RUN apt-get update -qq && apt-get install -yq --no-install-recommends afni dcm2niix \
+RUN apt-get update -qq && apt-get install -yq --no-install-recommends git-annex-standalone dcm2niix \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -211,6 +211,6 @@ RUN echo "Downloading MINC, BEASTLIB, and MODELS..." \
 USER neuro
 
 ENV KEY_A="VAL_A" \
-    KEY_B="VAL_B is \"hello\""
+    KEY_B="VAL_B"
 
 ENV KEY_C="based on $KEY_A"
