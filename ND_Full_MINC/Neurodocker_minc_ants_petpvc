@@ -5,7 +5,7 @@
 # pull request on our GitHub repository:
 #     https://github.com/kaczmarj/neurodocker
 #
-# Timestamp: 2017-08-31 14:51:29
+# Timestamp: 2017-08-31 16:51:31
 
 FROM debian:stretch
 
@@ -50,23 +50,6 @@ RUN echo "Downloading ANTs ..." \
 ENV ANTSPATH=/opt/ants \
     PATH=/opt/ants:$PATH
 
-#-----------------------------------------------------------
-# Install FSL v5.0.10
-# FSL is non-free. If you are considering commerical use
-# of this Docker image, please consult the relevant license:
-# https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Licence
-#-----------------------------------------------------------
-RUN echo "Downloading FSL ..." \
-    && curl -sSL https://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-5.0.10-centos6_64.tar.gz \
-    | tar zx -C /opt \
-    && /bin/bash /opt/fsl/etc/fslconf/fslpython_install.sh -q -f /opt/fsl \
-    && sed -i '$iecho Some packages in this Docker container are non-free' $ND_ENTRYPOINT \
-    && sed -i '$iecho If you are considering commercial use of this container, please consult the relevant license:' $ND_ENTRYPOINT \
-    && sed -i '$iecho https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Licence' $ND_ENTRYPOINT \
-    && sed -i '$isource $FSLDIR/etc/fslconf/fsl.sh' $ND_ENTRYPOINT
-ENV FSLDIR=/opt/fsl \
-    PATH=/opt/fsl/bin:$PATH
-
 # Create new user: neuro
 RUN useradd --no-user-group --create-home --shell /bin/bash neuro
 USER neuro
@@ -103,17 +86,20 @@ USER root
 #--------------------
 # Install MINC 1.9.15
 #--------------------
-RUN apt-get update -qq && apt-get install -yq --no-install-recommends libc6 libstdc++6 imagemagick perl \
+RUN apt-get update -qq && apt-get install -yq --no-install-recommends libc6 libstdc++6 imagemagick perl unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-RUN echo "Downloading MINC, BEASTLIB, and MODELS..." \
-    && curl --retry 5 -o /tmp/minc.deb -sSL http://packages.bic.mni.mcgill.ca/minc-toolkit/Debian/minc-toolkit-1.9.15-20170529-Debian_8.7-x86_64.deb \
-    && dpkg -i /tmp/minc.deb && rm -f /tmp/minc.deb \
-    && curl --retry 5 -o /tmp/beast.deb -sSL http://packages.bic.mni.mcgill.ca/minc-toolkit/Debian/beast-library-1.1.0-20121212.deb \
-    && dpkg -i /tmp/beast.deb && rm -f /tmp/beast.deb \
-    && curl --retry 5 -o /tmp/models.deb -sSL http://packages.bic.mni.mcgill.ca/minc-toolkit/Debian/bic-mni-models-0.1.1-20120421.deb \
-    && dpkg -i /tmp/models.deb && rm -f /tmp/models.deb \
-    && sed -i '$isource /opt/minc/1.9.15/minc-toolkit-config.sh' $ND_ENTRYPOINT
+RUN echo " Downloading MINC, BEASTLIB, and MODELS..." \
+    && curl -sSL --retry 5 https://www.dropbox.com/s/40hjzizaqi91373/minc-toolkit-1.9.15-20170529-CentOS_6.9-x86_64.tar.gz?dl=0 \
+    | tar zx -C /opt \
+    && curl -sSL --retry 5 http://packages.bic.mni.mcgill.ca/tgz/beast-library-1.1.tar.gz \
+    | tar zx -C /opt/minc/share \
+    && curl -sSL --retry 5 -o /tmp/mni_90a.zip http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_minc2.zip \
+    && unzip /tmp/mni_90a.zip -d /opt/minc/share/icbm152_model_09a \
+    && curl -sSL --retry 5 -o /tmp/mni_90c.zip http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09c_minc2.zip \
+    && unzip /tmp/mni_90c.zip -d /opt/minc/share/icbm152_model_09c \
+    && rm -r /tmp/mni_90*  \
+    && sed -i '$isource /opt/minc/minc-toolkit-config.sh' $ND_ENTRYPOINT
 
 #--------------------
 # Install PETPVC 1.2.0-b
