@@ -5,7 +5,7 @@
 # pull request on our GitHub repository:
 #     https://github.com/kaczmarj/neurodocker
 #
-# Timestamp: 2017-08-23 17:16:26
+# Timestamp: 2017-08-31 14:51:29
 
 FROM debian:stretch
 
@@ -14,13 +14,14 @@ ARG DEBIAN_FRONTEND=noninteractive
 #----------------------------------------------------------
 # Install common dependencies and create default entrypoint
 #----------------------------------------------------------
-ENV LANG="C.UTF-8" \
+ENV LANG="en_US.UTF-8" \
     LC_ALL="C.UTF-8" \
     ND_ENTRYPOINT="/neurodocker/startup.sh"
 RUN apt-get update -qq && apt-get install -yq --no-install-recommends  \
-    	bzip2 ca-certificates curl unzip \
+    	bzip2 ca-certificates curl locales unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && localedef --force --inputfile=en_US --charmap=UTF-8 C.UTF-8 \
     && chmod 777 /opt && chmod a+s /opt \
     && mkdir -p /neurodocker \
     && if [ ! -f "$ND_ENTRYPOINT" ]; then \
@@ -31,7 +32,12 @@ RUN apt-get update -qq && apt-get install -yq --no-install-recommends  \
     && chmod -R 777 /neurodocker && chmod a+s /neurodocker
 ENTRYPOINT ["/neurodocker/startup.sh"]
 
-RUN apt-get update -qq && apt-get install -yq --no-install-recommends git vim \
+RUN apt-get update -qq \
+    && apt-get install -y -q --no-install-recommends git \
+                                                     vim \
+                                                     graphviz \
+                                                     nano \
+                                                     bc \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -43,6 +49,23 @@ RUN echo "Downloading ANTs ..." \
     | tar zx -C /opt
 ENV ANTSPATH=/opt/ants \
     PATH=/opt/ants:$PATH
+
+#-----------------------------------------------------------
+# Install FSL v5.0.10
+# FSL is non-free. If you are considering commerical use
+# of this Docker image, please consult the relevant license:
+# https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Licence
+#-----------------------------------------------------------
+RUN echo "Downloading FSL ..." \
+    && curl -sSL https://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-5.0.10-centos6_64.tar.gz \
+    | tar zx -C /opt \
+    && /bin/bash /opt/fsl/etc/fslconf/fslpython_install.sh -q -f /opt/fsl \
+    && sed -i '$iecho Some packages in this Docker container are non-free' $ND_ENTRYPOINT \
+    && sed -i '$iecho If you are considering commercial use of this container, please consult the relevant license:' $ND_ENTRYPOINT \
+    && sed -i '$iecho https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Licence' $ND_ENTRYPOINT \
+    && sed -i '$isource $FSLDIR/etc/fslconf/fsl.sh' $ND_ENTRYPOINT
+ENV FSLDIR=/opt/fsl \
+    PATH=/opt/fsl/bin:$PATH
 
 # Create new user: neuro
 RUN useradd --no-user-group --create-home --shell /bin/bash neuro
@@ -56,7 +79,7 @@ ENV CONDA_DIR=/opt/conda \
 RUN echo "Downloading Miniconda installer ..." \
     && miniconda_installer=/tmp/miniconda.sh \
     && curl -sSL -o $miniconda_installer https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
-    && /bin/bash $miniconda_installer -f -b -p $CONDA_DIR \
+    && /bin/bash $miniconda_installer -b -p $CONDA_DIR \
     && rm -f $miniconda_installer \
     && conda config --system --prepend channels conda-forge \
     && conda config --system --set auto_update_conda false \
@@ -67,14 +90,13 @@ RUN echo "Downloading Miniconda installer ..." \
 #-------------------------
 # Create conda environment
 #-------------------------
-RUN conda create -y -q --name default python=3.6.1 \
+RUN conda create -y -q --name default \
     	numpy pandas traits \
     && sync && conda clean -tipsy && sync \
     && /bin/bash -c "source activate default \
     	&& pip install -q --no-cache-dir \
     	nipype" \
     && sync
-ENV PATH=/opt/conda/envs/default/bin:$PATH
 
 USER root
 
