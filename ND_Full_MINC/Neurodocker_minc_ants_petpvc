@@ -5,7 +5,7 @@
 # pull request on our GitHub repository:
 #     https://github.com/kaczmarj/neurodocker
 #
-# Timestamp: 2017-09-01 11:05:13
+# Timestamp: 2017-09-01 12:17:21
 
 FROM debian:stretch
 
@@ -54,31 +54,15 @@ ENV ANTSPATH=/opt/ants \
 RUN useradd --no-user-group --create-home --shell /bin/bash neuro
 USER neuro
 
-#------------------
-# Install Miniconda
-#------------------
-ENV CONDA_DIR=/opt/conda \
-    PATH=/opt/conda/bin:$PATH
-RUN echo "Downloading Miniconda installer ..." \
-    && miniconda_installer=/tmp/miniconda.sh \
-    && curl -sSL -o $miniconda_installer https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
-    && /bin/bash $miniconda_installer -b -p $CONDA_DIR \
-    && rm -f $miniconda_installer \
-    && conda config --system --prepend channels conda-forge \
-    && conda config --system --set auto_update_conda false \
-    && conda config --system --set show_channel_urls true \
-    && conda update -y -q --all && sync \
-    && conda clean -tipsy && sync
-
 #-------------------------
-# Create conda environment
+# Update conda environment
 #-------------------------
-RUN conda create -y -q --name default \
+RUN conda install -y -q --name default \
     	numpy pandas traits \
     && sync && conda clean -tipsy && sync \
     && /bin/bash -c "source activate default \
     	&& pip install -q --no-cache-dir \
-    	nipype" \
+    	ipython nipype" \
     && sync
 
 USER root
@@ -152,7 +136,7 @@ RUN echo '{ \
     \n      { \
     \n        "env_name": "default", \
     \n        "conda_install": "numpy pandas traits", \
-    \n        "pip_install": "nipype" \
+    \n        "pip_install": "ipython nipype" \
     \n      } \
     \n    ], \
     \n    [ \
@@ -189,6 +173,6 @@ RUN echo '{ \
     \n      } \
     \n    ] \
     \n  ], \
-    \n  "generation_timestamp": "2017-09-01 11:05:13", \
+    \n  "generation_timestamp": "2017-09-01 12:17:21", \
     \n  "neurodocker_version": "0.3.0-dev0" \
     \n}' > /neurodocker/neurodocker_specs.json
