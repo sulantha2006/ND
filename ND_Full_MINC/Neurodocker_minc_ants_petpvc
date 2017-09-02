@@ -5,7 +5,7 @@
 # pull request on our GitHub repository:
 #     https://github.com/kaczmarj/neurodocker
 #
-# Timestamp: 2017-09-01 15:43:28
+# Timestamp: 2017-09-02 09:19:16
 
 FROM debian:stretch
 
@@ -40,15 +40,6 @@ RUN apt-get update -qq \
                                                      bc \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-#-------------------
-# Install ANTs 2.2.0
-#-------------------
-RUN echo "Downloading ANTs ..." \
-    && curl -sSL --retry 5 https://dl.dropbox.com/s/2f4sui1z6lcgyek/ANTs-Linux-centos5_x86_64-v2.2.0-0740f91.tar.gz \
-    | tar zx -C /opt
-ENV ANTSPATH=/opt/ants \
-    PATH=/opt/ants:$PATH
 
 # Create new user: neuro
 RUN useradd --no-user-group --create-home --shell /bin/bash neuro
@@ -102,6 +93,15 @@ RUN apt-get update -qq && apt-get install -yq --no-install-recommends libgl1-mes
     && rm -r /tmp/mni_90*  \
     && sed -i '$isource /opt/minc/minc-toolkit-config.sh' $ND_ENTRYPOINT
 
+#-------------------
+# Install ANTs 2.2.0
+#-------------------
+RUN echo "Downloading ANTs ..." \
+    && curl -sSL --retry 5 https://dl.dropbox.com/s/2f4sui1z6lcgyek/ANTs-Linux-centos5_x86_64-v2.2.0-0740f91.tar.gz \
+    | tar zx -C /opt
+ENV ANTSPATH=/opt/ants \
+    PATH=/opt/ants:$PATH
+
 #--------------------
 # Install PETPVC 1.2.0-b
 #--------------------
@@ -139,12 +139,6 @@ RUN echo '{ \
     \n      ] \
     \n    ], \
     \n    [ \
-    \n      "ants", \
-    \n      { \
-    \n        "version": "2.2.0" \
-    \n      } \
-    \n    ], \
-    \n    [ \
     \n      "user", \
     \n      "neuro" \
     \n    ], \
@@ -165,6 +159,12 @@ RUN echo '{ \
     \n      "minc", \
     \n      { \
     \n        "version": "1.9.15" \
+    \n      } \
+    \n    ], \
+    \n    [ \
+    \n      "ants", \
+    \n      { \
+    \n        "version": "2.2.0" \
     \n      } \
     \n    ], \
     \n    [ \
@@ -191,6 +191,6 @@ RUN echo '{ \
     \n      } \
     \n    ] \
     \n  ], \
-    \n  "generation_timestamp": "2017-09-01 15:43:28", \
+    \n  "generation_timestamp": "2017-09-02 09:19:16", \
     \n  "neurodocker_version": "0.3.0-dev0" \
     \n}' > /neurodocker/neurodocker_specs.json
