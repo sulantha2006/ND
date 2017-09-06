@@ -5,7 +5,7 @@
 # pull request on our GitHub repository:
 #     https://github.com/kaczmarj/neurodocker
 #
-# Timestamp: 2017-09-02 09:19:16
+# Timestamp: 2017-09-06 10:32:32
 
 FROM debian:stretch
 
@@ -191,6 +191,6 @@ RUN echo '{ \
     \n      } \
     \n    ] \
     \n  ], \
-    \n  "generation_timestamp": "2017-09-02 09:19:16", \
+    \n  "generation_timestamp": "2017-09-06 10:32:32", \
     \n  "neurodocker_version": "0.3.0-dev0" \
     \n}' > /neurodocker/neurodocker_specs.json
