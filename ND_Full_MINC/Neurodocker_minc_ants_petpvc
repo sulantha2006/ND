@@ -5,7 +5,7 @@
 # pull request on our GitHub repository:
 #     https://github.com/kaczmarj/neurodocker
 #
-# Timestamp: 2017-09-09 12:33:46
+# Timestamp: 2017-09-09 12:56:59
 
 FROM debian:stretch
 
@@ -70,7 +70,7 @@ RUN conda create -y -q --name default \
     && sync && conda clean -tipsy && sync \
     && /bin/bash -c "source activate default \
     	&& pip install -q --no-cache-dir \
-    	ipython nipype pylzma py7zlib" \
+    	ipython nipype pylzma" \
     && sync
 ENV PATH=/opt/conda/envs/default/bin:$PATH
 
@@ -149,7 +149,7 @@ RUN echo '{ \
     \n      { \
     \n        "env_name": "default", \
     \n        "conda_install": "numpy pandas traits", \
-    \n        "pip_install": "ipython nipype pylzma py7zlib", \
+    \n        "pip_install": "ipython nipype pylzma", \
     \n        "add_to_path": true \
     \n      } \
     \n    ], \
@@ -193,6 +193,6 @@ RUN echo '{ \
     \n      } \
     \n    ] \
     \n  ], \
-    \n  "generation_timestamp": "2017-09-09 12:33:46", \
+    \n  "generation_timestamp": "2017-09-09 12:56:59", \
     \n  "neurodocker_version": "0.3.0-dev0" \
     \n}' > /neurodocker/neurodocker_specs.json
