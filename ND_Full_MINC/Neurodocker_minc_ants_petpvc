@@ -38,7 +38,7 @@ RUN apt-get update -qq \
                                                      graphviz \
                                                      nano \
                                                      bc \
-                                                     bzip2 \
+                                                     bzip2 parallel sudo\
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
